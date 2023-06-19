@@ -13,6 +13,8 @@ router.get('/',todoController.findAllTodo);
 router.put('/:id', todoController.updateTodo);
 //삭제
 router.delete('/:id', todoController.deleteTodo);
+//모두 삭제
+router.delete('/', todoController.deleteAllTodos);
 //검색
 router.get('/search', todoController.searchTodos);
 //완료 상태

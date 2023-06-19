@@ -1,15 +1,22 @@
+const { UUID } = require('sequelize');
 const TodoRepository = require('../repository/TodoRepository.js');
 const { all } = require('../router/TodoRouter.js');
+const e = require('express');
 
 class TodoService {
     TodoRepository = new TodoRepository();
 
-    createTodo = async (content) => {
-      const createdAt = new Date();
-      const updatedAt = createdAt;
-      const id = generateId(); // 예시로 생성된 ID를 사용하는 함수입니다. 실제로는 적절한 ID 생성 방식을 사용해야 합니다.
+    createTodos = async (content) => { 
+      if (!content) {
+        throw new Error('Todo content is required');
+      }
+    
+            const id = 0;
+            const createdAt = new Date();
+            const updatedAt = createdAt;
+            const completed = false;
 
-      const createdTodo = await this.todoRepository.createTodo(id, content, createdAt, updatedAt, completed);
+      const createdTodo = await this.TodoRepository.createTodo(id,content, createdAt, updatedAt, completed)
 
       return createdTodo;
   }
@@ -20,25 +27,35 @@ class TodoService {
         alltodo.sort((a, b) => {
             return b.createAt - a.createAt;
         })
-        return alltodo.map(todo => {
+        return alltodo.map(createTodoData => {
             return{
-                id: createTodoData.null,
+                id: createTodoData.id,
                 content: createTodoData.content,
                 createAt: createTodoData.createAt,
                 updateAt: createTodoData.updateAt,
+                completed: createTodoData.completed,
+                status: createTodoData.completed ? 'Completed' : 'Incomplete',
             }
         });
     };
 
-    updateTodo = async (id, updateData) => {
-        const todo = await this.TodoRepository.findtoById(id);
-        if(!todo) {
-            throw new Error('todo가 없습니다');
+    updateTodo = async (id, content) => {
+      try {
+        const todo = await this.TodoRepository.findById(id);
+        if (!todo) {
+          throw new Error('todo가 없습니다');
         }
-        const updateTodo = await this.TodoRepository.updateTodo(id, updateData);
-
-        return updateTodo;
-    };
+    
+        todo.content = content;
+        todo.updatedAt = new Date();
+    
+        const updatedTodo = await this.todoRepository.save(todo);
+        return updatedTodo;
+      } catch (error) {
+        console.log(error);
+        throw new Error('Todo 업데이트 실패');
+      }
+    }
 
     deleteTodo = async (id) => {
         const deleteTodo = await this.TodoRepository.deleteTodo(id);
@@ -92,5 +109,6 @@ class TodoService {
         const completedTodo = await this.todoRepository.completeTodoById(todoId);
         return completedTodo;
       };
-}
+  }
+
 module.exports = TodoService;

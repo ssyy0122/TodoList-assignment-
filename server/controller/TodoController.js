@@ -6,18 +6,15 @@ const Todo = require("../models").Todo;
 class TodoController {
     todoService = new TodoService();
     //todo생성
-    createTodo = async (req, res, next) => {
+    createTodo = async (req, res) => {
         const { content } = req.body;
 
         try {
-            const id = generateId(); // id 생성 로직
-            const createdAt = new Date();
-            const updatedAt = createdAt;
-            const completed = false;
-
-            const createTodoData = await this.todoService.createTodo(id, content, createdAt, updatedAt, completed);
-            res.status(201).json({ data: { id: createTodoData.id, content: createTodoData.content } });
+            const createTodoData = await this.todoService.createTodos(content);
+            console.log(createTodoData)
+            res.status(201).json({ data: { id: createTodoData.id, content: createTodoData.content,} });
         } catch (error) {
+            console.log(error);
             res.status(500).json({ error: 'Todo 생성 실패' });
         }
     }
@@ -28,15 +25,14 @@ class TodoController {
             const todos = await this.todoService.findAllTodo();
             res.status(200).json({ data: todos });
         } catch (error) {
+            console.log(error)
             res.status(500).json({ error: 'Todo 조회 실패' });
         }
     }
     //todo 수정
     updateTodo = async (req, res, next) => {
-        const updateData = {
-            content: req.body.content,
-            updateAt: req.body.updateAt
-        };
+   
+        const  content =  req.body.content;
         const { id } = req.params;
         try{
             const updateTodo = await this.todoService.updateTodo(id, updateData);
@@ -55,6 +51,16 @@ class TodoController {
             res.status(500).json({ error: '삭제 실패' });
         }
     };
+    //todo 모두 삭제
+    async deleteAllTodos(req, res) {
+        try {
+          const deletedRows = await this.todoRepository.deleteAllTodos();
+          res.json({ message: `${deletedRows}개의 할일 삭제됨` });
+        } catch (error) {
+          console.log(error);
+          res.status(500).json({ error: '할일 삭제 실패' });
+        }
+      }
     // todo status
     updateTodoStatus = async (req, res, next) => {
         const { id } = req.params;
